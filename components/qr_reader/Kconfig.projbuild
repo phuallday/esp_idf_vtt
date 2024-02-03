@@ -1,0 +1,9 @@
+menu "MQTT Configuration"
+
+    config QR_READER
+        string "QR Reader"
+        default "UART_NUM_2"
+        help
+            URL of the broker to connect to
+
+endmenu
