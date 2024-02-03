@@ -14,5 +14,10 @@
     ],
     "idf.portWin": "COM7",
     "idf.pythonBinPathWin": "C:\\Users\\mic-e5\\.espressif\\python_env\\idf5.1_py3.11_env\\Scripts\\python.exe",
-    "idf.toolsPathWin": "C:\\Users\\mic-e5\\.espressif"
+    "idf.toolsPathWin": "C:\\Users\\mic-e5\\.espressif",
+    "files.associations": {
+        "stdio.h": "c",
+        "esp_wifi.h": "c"
+    },
+    "idf.flashType": "UART"
 }
