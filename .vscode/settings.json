@@ -1,24 +1,18 @@
 {
     "C_Cpp.intelliSenseEngine": "default",
     "idf.adapterTargetName": "esp32",
-    "idf.customExtraPaths": "C:\\Users\\mic-e5\\.espressif\\tools\\xtensa-esp-elf-gdb\\12.1_20221002\\xtensa-esp-elf-gdb\\bin;C:\\Users\\mic-e5\\.espressif\\tools\\riscv32-esp-elf-gdb\\12.1_20221002\\riscv32-esp-elf-gdb\\bin;C:\\Users\\mic-e5\\.espressif\\tools\\xtensa-esp32-elf\\esp-12.2.0_20230208\\xtensa-esp32-elf\\bin;C:\\Users\\mic-e5\\.espressif\\tools\\xtensa-esp32s2-elf\\esp-12.2.0_20230208\\xtensa-esp32s2-elf\\bin;C:\\Users\\mic-e5\\.espressif\\tools\\xtensa-esp32s3-elf\\esp-12.2.0_20230208\\xtensa-esp32s3-elf\\bin;C:\\Users\\mic-e5\\.espressif\\tools\\riscv32-esp-elf\\esp-12.2.0_20230208\\riscv32-esp-elf\\bin;C:\\Users\\mic-e5\\.espressif\\tools\\esp32ulp-elf\\2.35_20220830\\esp32ulp-elf\\bin;C:\\Users\\mic-e5\\.espressif\\tools\\cmake\\3.24.0\\bin;C:\\Users\\mic-e5\\.espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20230921\\openocd-esp32\\bin;C:\\Users\\mic-e5\\.espressif\\tools\\ninja\\1.10.2;C:\\Users\\mic-e5\\.espressif\\tools\\idf-exe\\1.0.3;C:\\Users\\mic-e5\\.espressif\\tools\\ccache\\4.8\\ccache-4.8-windows-x86_64;C:\\Users\\mic-e5\\.espressif\\tools\\dfu-util\\0.11\\dfu-util-0.11-win64;C:\\Users\\mic-e5\\.espressif\\tools\\esp-rom-elfs\\20230320",
+    "idf.customExtraPaths": "/home/phu/.espressif/tools/xtensa-esp-elf-gdb/12.1_20221002/xtensa-esp-elf-gdb/bin:/home/phu/.espressif/tools/riscv32-esp-elf-gdb/12.1_20221002/riscv32-esp-elf-gdb/bin:/home/phu/.espressif/tools/xtensa-esp32-elf/esp-12.2.0_20230208/xtensa-esp32-elf/bin:/home/phu/.espressif/tools/xtensa-esp32s2-elf/esp-12.2.0_20230208/xtensa-esp32s2-elf/bin:/home/phu/.espressif/tools/xtensa-esp32s3-elf/esp-12.2.0_20230208/xtensa-esp32s3-elf/bin:/home/phu/.espressif/tools/riscv32-esp-elf/esp-12.2.0_20230208/riscv32-esp-elf/bin:/home/phu/.espressif/tools/esp32ulp-elf/2.35_20220830/esp32ulp-elf/bin:/home/phu/.espressif/tools/cmake/3.24.0/bin:/home/phu/.espressif/tools/openocd-esp32/v0.12.0-esp32-20230921/openocd-esp32/bin:/home/phu/.espressif/tools/ninja/1.10.2:/home/phu/.espressif/tools/esp-rom-elfs/20230320",
     "idf.customExtraVars": {
-        "OPENOCD_SCRIPTS": "C:\\Users\\mic-e5\\.espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20230921/openocd-esp32/share/openocd/scripts",
-        "IDF_CCACHE_ENABLE": "1",
-        "ESP_ROM_ELF_DIR": "C:\\Users\\mic-e5\\.espressif\\tools\\esp-rom-elfs\\20230320/"
+        "OPENOCD_SCRIPTS": "/home/phu/.espressif/tools/openocd-esp32/v0.12.0-esp32-20230921/openocd-esp32/share/openocd/scripts",
+        "ESP_ROM_ELF_DIR": "/home/phu/.espressif/tools/esp-rom-elfs/20230320/"
     },
-    "idf.espIdfPathWin": "C:\\Users\\mic-e5\\esp\\v5.1.2\\esp-idf",
+    "idf.espIdfPath": "/home/phu/esp/v5.1.2/esp-idf",
     "idf.openOcdConfigs": [
         "interface/ftdi/esp32_devkitj_v1.cfg",
         "target/esp32.cfg"
     ],
-    "idf.portWin": "COM7",
-    "idf.pythonBinPathWin": "C:\\Users\\mic-e5\\.espressif\\python_env\\idf5.1_py3.11_env\\Scripts\\python.exe",
-    "idf.toolsPathWin": "C:\\Users\\mic-e5\\.espressif",
-    "files.associations": {
-        "stdio.h": "c",
-        "esp_wifi.h": "c",
-        "mqtt_client.h": "c"
-    },
+    "idf.port": "/dev/ttyUSB0",
+    "idf.pythonBinPath": "/home/phu/.espressif/python_env/idf5.1_py3.7_env/bin/python",
+    "idf.toolsPath": "/home/phu/.espressif",
     "idf.flashType": "UART"
 }
