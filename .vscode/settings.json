@@ -17,7 +17,8 @@
     "idf.toolsPathWin": "C:\\Users\\mic-e5\\.espressif",
     "files.associations": {
         "stdio.h": "c",
-        "esp_wifi.h": "c"
+        "esp_wifi.h": "c",
+        "mqtt_client.h": "c"
     },
     "idf.flashType": "UART"
 }

@@ -1,0 +1,7 @@
+menu "MQTT Configuration"
+
+    config BROKER
+        string "MQTT BROKER"
+        default "myssid"
+
+endmenu
