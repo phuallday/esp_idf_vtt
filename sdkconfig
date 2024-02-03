@@ -340,7 +340,13 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# Example Configuration
+# MQTT Configuration
+#
+CONFIG_BROKER_URL="mqtt://mqtt.eclipseprojects.io"
+# end of MQTT Configuration
+
+#
+# WiFi Configuration
 #
 CONFIG_ESP_WIFI_SSID="MatsuyaIOT"
 CONFIG_ESP_WIFI_PASSWORD="MatsuyaMIC@"
@@ -357,7 +363,7 @@ CONFIG_ESP_WIFI_AUTH_WPA2_PSK=y
 # CONFIG_ESP_WIFI_AUTH_WPA3_PSK is not set
 # CONFIG_ESP_WIFI_AUTH_WPA2_WPA3_PSK is not set
 # CONFIG_ESP_WIFI_AUTH_WAPI_PSK is not set
-# end of Example Configuration
+# end of WiFi Configuration
 
 #
 # Compiler options
