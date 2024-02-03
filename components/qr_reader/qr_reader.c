@@ -31,7 +31,7 @@ static const char *TAG = "uart_events";
  * - Pin assignment: TxD (default), RxD (default)
  */
 
-#define EX_UART_NUM UART_NUM_2
+#define EX_UART_NUM CONFIG_QR_READER_UART_PORT
 #define PATTERN_CHR_NUM    (3)         /*!< Set the number of consecutive and identical characters received by receiver which defines a UART pattern*/
 
 #define BUF_SIZE (1024)

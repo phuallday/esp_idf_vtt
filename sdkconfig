@@ -340,10 +340,10 @@ CONFIG_PARTITION_TABLE_MD5=y
 # end of Partition Table
 
 #
-# MQTT Configuration
+# QR Reader Configuration
 #
-CONFIG_QR_READER="UART_NUM_2"
-# end of MQTT Configuration
+CONFIG_QR_READER_UART_PORT="UART_NUM_2"
+# end of QR Reader Configuration
 
 #
 # MQTT Configuration
