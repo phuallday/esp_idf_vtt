@@ -29,12 +29,14 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 
-const char *TAG = "mqtt_example";
-
+const char *TAG = "mqtt";
+esp_mqtt_client_handle_t client;
+extern esp_event_handler_t qr_reader_event_handler;
 
 void log_error_if_nonzero(const char *message, int error_code)
 {
-    if (error_code != 0) {
+    if (error_code != 0)
+    {
         ESP_LOGE(TAG, "Last error %s: 0x%x", message, error_code);
     }
 }
@@ -53,9 +55,10 @@ void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event
 {
     ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%" PRIi32 "", base, event_id);
     esp_mqtt_event_handle_t event = event_data;
-    esp_mqtt_client_handle_t client = event->client;
+    // esp_mqtt_client_handle_t client = event->client;
     int msg_id;
-    switch ((esp_mqtt_event_id_t)event_id) {
+    switch ((esp_mqtt_event_id_t)event_id)
+    {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
         msg_id = esp_mqtt_client_publish(client, "uat/topic/qos1", "data_3", 0, 1, 0);
@@ -92,12 +95,12 @@ void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event
         break;
     case MQTT_EVENT_ERROR:
         ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
-        if (event->error_handle->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
+        if (event->error_handle->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT)
+        {
             log_error_if_nonzero("reported from esp-tls", event->error_handle->esp_tls_last_esp_err);
             log_error_if_nonzero("reported from tls stack", event->error_handle->esp_tls_stack_err);
-            log_error_if_nonzero("captured as transport's socket errno",  event->error_handle->esp_transport_sock_errno);
+            log_error_if_nonzero("captured as transport's socket errno", event->error_handle->esp_transport_sock_errno);
             ESP_LOGI(TAG, "Last errno string (%s)", strerror(event->error_handle->esp_transport_sock_errno));
-
         }
         break;
     default:
@@ -105,7 +108,13 @@ void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event
         break;
     }
 }
-
+void qr_reader_data(void *event_handler_arg,
+                    esp_event_base_t event_base,
+                    int32_t event_id,
+                    void *event_data){
+                        char *str = (char *)event_data;
+                        ESP_LOGI(TAG,"qr:%s",(char *)event_data);
+                    }
 void mqtt_app_start(void)
 {
     esp_mqtt_client_config_t mqtt_cfg = {
@@ -114,15 +123,20 @@ void mqtt_app_start(void)
 #if CONFIG_BROKER_URL_FROM_STDIN
     char line[128];
 
-    if (strcmp(mqtt_cfg.broker.address.uri, "FROM_STDIN") == 0) {
+    if (strcmp(mqtt_cfg.broker.address.uri, "FROM_STDIN") == 0)
+    {
         int count = 0;
         printf("Please enter url of mqtt broker\n");
-        while (count < 128) {
+        while (count < 128)
+        {
             int c = fgetc(stdin);
-            if (c == '\n') {
+            if (c == '\n')
+            {
                 line[count] = '\0';
                 break;
-            } else if (c > 0 && c < 127) {
+            }
+            else if (c > 0 && c < 127)
+            {
                 line[count] = c;
                 ++count;
             }
@@ -130,14 +144,17 @@ void mqtt_app_start(void)
         }
         mqtt_cfg.broker.address.uri = line;
         printf("Broker url: %s\n", line);
-    } else {
+    }
+    else
+    {
         ESP_LOGE(TAG, "Configuration mismatch: wrong broker url");
         abort();
     }
 #endif /* CONFIG_BROKER_URL_FROM_STDIN */
 
-    esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
+    client = esp_mqtt_client_init(&mqtt_cfg);
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(client);
+    esp_event_handler_register_with(qr_reader_event_handler, "QR_READER", 0, qr_reader_data, NULL);
 }

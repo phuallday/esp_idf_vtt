@@ -14,6 +14,7 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
+#include "esp_event.h"
 
 static const char *TAG = "uart_events";
 #define TXD_PIN (GPIO_NUM_17)
@@ -37,7 +38,7 @@ static const char *TAG = "uart_events";
 #define BUF_SIZE (1024)
 #define RD_BUF_SIZE (BUF_SIZE)
 static QueueHandle_t uart0_queue;
-
+esp_event_handler_t qr_reader_event_handler;
 static void uart_event_task(void *pvParameters)
 {
     uart_event_t event;
@@ -61,6 +62,7 @@ static void uart_event_task(void *pvParameters)
                 uart_read_bytes(EX_UART_NUM, dtmp, event.size, portMAX_DELAY);
                 ESP_LOGI(TAG, "[DATA EVT]: %s", (const char *)dtmp);
                 // uart_write_bytes(EX_UART_NUM, (const char*) dtmp, event.size);
+                esp_event_post_to(qr_reader_event_handler, "QR_READER", 0, dtmp,sizeof(dtmp),portMAX_DELAY);
                 break;
             // Event of HW FIFO overflow detected
             case UART_FIFO_OVF:
@@ -152,6 +154,17 @@ void qr_reader_app_start(void)
     uart_enable_pattern_det_baud_intr(EX_UART_NUM, '+', PATTERN_CHR_NUM, 9, 0, 0);
     // Reset the pattern queue length to record at most 20 pattern positions.
     uart_pattern_queue_reset(EX_UART_NUM, 20);
+    esp_event_loop_args_t qr_reader_event_loop_args = {
+        .queue_size = 2,          /**< size of the event loop queue */
+        .task_name = "uart_data", /**< name of the event loop task; if NULL,
+                                       a dedicated task is not created for event loop*/
+        .task_priority = 0,       /**< priority of the event loop task, ignored if task name is NULL */
+        .task_stack_size = 2048,  /**< stack size of the event loop task, ignored if task name is NULL */
+        .task_core_id = 0,        /**< core to which the event loop task is pinned to,
+                                                ignored if task name is NULL */
+    };
+
+    esp_event_loop_create(&qr_reader_event_loop_args, &qr_reader_event_handler);
 
     // Create a task to handler UART event from ISR
     xTaskCreate(uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
