@@ -33,10 +33,8 @@ const char *TAG = "mqtt";
 esp_mqtt_client_handle_t client;
 extern esp_event_handler_t qr_reader_event_handler;
 
-void log_error_if_nonzero(const char *message, int error_code)
-{
-    if (error_code != 0)
-    {
+void log_error_if_nonzero(const char *message, int error_code) {
+    if (error_code != 0) {
         ESP_LOGE(TAG, "Last error %s: 0x%x", message, error_code);
     }
 }
@@ -51,14 +49,12 @@ void log_error_if_nonzero(const char *message, int error_code)
  * @param event_id The id for the received event.
  * @param event_data The data for the event, esp_mqtt_event_handle_t.
  */
-void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data)
-{
+void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%" PRIi32 "", base, event_id);
     esp_mqtt_event_handle_t event = event_data;
     // esp_mqtt_client_handle_t client = event->client;
     int msg_id;
-    switch ((esp_mqtt_event_id_t)event_id)
-    {
+    switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
         msg_id = esp_mqtt_client_publish(client, "uat/topic/qos1", "data_3", 0, 1, 0);
@@ -95,8 +91,7 @@ void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event
         break;
     case MQTT_EVENT_ERROR:
         ESP_LOGI(TAG, "MQTT_EVENT_ERROR");
-        if (event->error_handle->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT)
-        {
+        if (event->error_handle->error_type == MQTT_ERROR_TYPE_TCP_TRANSPORT) {
             log_error_if_nonzero("reported from esp-tls", event->error_handle->esp_tls_last_esp_err);
             log_error_if_nonzero("reported from tls stack", event->error_handle->esp_tls_stack_err);
             log_error_if_nonzero("captured as transport's socket errno", event->error_handle->esp_transport_sock_errno);
@@ -111,32 +106,28 @@ void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event
 void qr_reader_data(void *event_handler_arg,
                     esp_event_base_t event_base,
                     int32_t event_id,
-                    void *event_data){
-                        char *str = (char *)event_data;
-                        ESP_LOGI(TAG,"qr:%s",(char *)event_data);
-                    }
-void mqtt_app_start(void)
-{
+                    void *event_data) {
+    printf("data %s %p\n", (const char *)event_data, event_data);
+    ESP_LOGI(TAG, "qr:%s", (const char *)event_base);
+    ESP_LOGI(TAG, "qr:%d", (int)event_id);
+}
+void mqtt_app_start(void) {
     esp_mqtt_client_config_t mqtt_cfg = {
         .broker.address.uri = CONFIG_BROKER_URL,
     };
 #if CONFIG_BROKER_URL_FROM_STDIN
     char line[128];
 
-    if (strcmp(mqtt_cfg.broker.address.uri, "FROM_STDIN") == 0)
-    {
+    if (strcmp(mqtt_cfg.broker.address.uri, "FROM_STDIN") == 0) {
         int count = 0;
         printf("Please enter url of mqtt broker\n");
-        while (count < 128)
-        {
+        while (count < 128) {
             int c = fgetc(stdin);
-            if (c == '\n')
-            {
+            if (c == '\n') {
                 line[count] = '\0';
                 break;
             }
-            else if (c > 0 && c < 127)
-            {
+            else if (c > 0 && c < 127) {
                 line[count] = c;
                 ++count;
             }
@@ -145,8 +136,7 @@ void mqtt_app_start(void)
         mqtt_cfg.broker.address.uri = line;
         printf("Broker url: %s\n", line);
     }
-    else
-    {
+    else {
         ESP_LOGE(TAG, "Configuration mismatch: wrong broker url");
         abort();
     }
