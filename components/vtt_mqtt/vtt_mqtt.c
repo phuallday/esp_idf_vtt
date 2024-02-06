@@ -28,12 +28,14 @@
 #include "vtt_mqtt.h"
 #include "esp_log.h"
 #include "mqtt_client.h"
+#include "cJSON.h"
+#include "esp_mac.h"
 
-const char *TAG = "mqtt";
+static const char *TAG = "mqtt";
 esp_mqtt_client_handle_t client;
 extern esp_event_handler_t qr_reader_event_handler;
 
-void log_error_if_nonzero(const char *message, int error_code) {
+static void log_error_if_nonzero(const char *message, int error_code) {
     if (error_code != 0) {
         ESP_LOGE(TAG, "Last error %s: 0x%x", message, error_code);
     }
@@ -49,7 +51,7 @@ void log_error_if_nonzero(const char *message, int error_code) {
  * @param event_id The id for the received event.
  * @param event_data The data for the event, esp_mqtt_event_handle_t.
  */
-void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
+static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     ESP_LOGD(TAG, "Event dispatched from event loop base=%s, event_id=%" PRIi32 "", base, event_id);
     esp_mqtt_event_handle_t event = event_data;
     // esp_mqtt_client_handle_t client = event->client;
@@ -103,13 +105,40 @@ void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event
         break;
     }
 }
+
 void qr_reader_data(void *event_handler_arg,
                     esp_event_base_t event_base,
                     int32_t event_id,
                     void *event_data) {
-    printf("data %s %p\n", (const char *)event_data, event_data);
-    ESP_LOGI(TAG, "qr:%s", (const char *)event_base);
-    ESP_LOGI(TAG, "qr:%d", (int)event_id);
+    ESP_LOGI(TAG, "qr:%s", (const char *)event_data);
+
+    const char *qrStr = (const char *)event_data;
+
+    if (strncmp(qrStr, "PARTN", strlen("PARTN")) == 0) {
+        // get mac address
+        uint8_t base_mac_addr[6];
+        esp_efuse_mac_get_default(base_mac_addr);
+        char macStr[20];
+        sprintf(macStr, "%02x:%02x:%02x:%02x:%02x:%02x", base_mac_addr[0], base_mac_addr[1], base_mac_addr[2], base_mac_addr[3], base_mac_addr[4], base_mac_addr[5]);
+        cJSON *json = cJSON_CreateObject();
+        cJSON_AddStringToObject(json, "MAC_ADDRESS", macStr);
+        cJSON_AddStringToObject(json, "QR_CODE", qrStr);
+        // convert the cJSON object to a JSON string
+        char *json_str = cJSON_Print(json);
+        int msg_id     = esp_mqtt_client_publish(client, "uat/production_change/1", json_str, strlen(json_str), 1, 0);
+        ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+    }
+    else if (strncmp(qrStr, "bc_", strlen("bc_")) == 0 ||
+             strncmp(qrStr, "em_", strlen("bc_")) == 0) {
+    }
+    else if (strncmp(qrStr, "SXER15U001", strlen("SXER15U001")) == 0 ||
+             strncmp(qrStr, "SXOM15U001", strlen("SXOM15U001")) == 0 ||
+             strncmp(qrStr, "QCOM15U001", strlen("QCOM15U001")) == 0 ||
+             strncmp(qrStr, "SXTM15U001", strlen("SXTM15U001")) == 0 ||
+             strncmp(qrStr, "SXTE15U001", strlen("SXTE15U001")) == 0) {
+    }
+    else {
+    }
 }
 void mqtt_app_start(void) {
     esp_mqtt_client_config_t mqtt_cfg = {

@@ -348,14 +348,14 @@ CONFIG_QR_READER_UART_PORT="UART_NUM_2"
 #
 # MQTT Configuration
 #
-CONFIG_BROKER_URL="mqtt://mqtt.eclipseprojects.io"
+CONFIG_BROKER_URL="mqtt://vtt.mrd-mic.com"
 # end of MQTT Configuration
 
 #
 # WiFi Configuration
 #
-CONFIG_ESP_WIFI_SSID="Phu Truong"
-CONFIG_ESP_WIFI_PASSWORD="phudien123"
+CONFIG_ESP_WIFI_SSID="MatsuyaIOT"
+CONFIG_ESP_WIFI_PASSWORD="MatsuyaMIC@"
 # CONFIG_ESP_WPA3_SAE_PWE_HUNT_AND_PECK is not set
 # CONFIG_ESP_WPA3_SAE_PWE_HASH_TO_ELEMENT is not set
 CONFIG_ESP_WPA3_SAE_PWE_BOTH=y

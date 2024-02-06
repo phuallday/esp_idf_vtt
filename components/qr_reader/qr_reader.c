@@ -39,6 +39,28 @@ static const char *TAG = "uart_events";
 #define RD_BUF_SIZE (BUF_SIZE)
 static QueueHandle_t uart0_queue;
 esp_event_handler_t qr_reader_event_handler;
+void trimString(char *str) {
+    char *start =
+        str +
+        strspn(str, " \t\n\r"); // Points to the first non-whitespace character
+    char *end =
+        str + strlen(str) - 1; // Points to the last character of the string
+
+    while (end > start &&
+           (*end == ' ' || *end == '\t' || *end == '\n' || *end == '\r')) {
+        --end; // Move the end pointer backward while it points to whitespace
+    }
+
+    *(end + 1) = '\0'; // Place the null terminator after the last non-whitespace
+                       // character
+
+    // Move the trimmed string to the start of the buffer
+    if (start > str) {
+        memmove(str, start,
+                end - start +
+                    2); // +2 to include the last character and null terminator
+    }
+}
 static void uart_event_task(void *pvParameters) {
     uart_event_t event;
     size_t buffered_size;
@@ -59,6 +81,7 @@ static void uart_event_task(void *pvParameters) {
                 ESP_LOGI(TAG, "[DATA EVT]: %s", dtmp);
                 ESP_LOGI(TAG, "[SIZE EVT]: %d", event.size);
                 // uart_write_bytes(EX_UART_NUM, (const char*) dtmp, event.size);
+                trimString((char*)dtmp);
                 esp_event_post_to(qr_reader_event_handler, "QR_READER", 0, dtmp, BUF_SIZE, portMAX_DELAY);
                 break;
             // Event of HW FIFO overflow detected
