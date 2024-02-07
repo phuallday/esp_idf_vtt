@@ -1,9 +1,0 @@
-menu "QR Reader Configuration"
-
-    config QR_READER_UART_PORT
-        string "QR Reader UART Port"
-        default "UART_NUM_2"
-        help
-            UART Port Number
-
-endmenu

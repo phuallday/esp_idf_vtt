@@ -1,1 +1,0 @@
-void qr_reader_app_start(void);
