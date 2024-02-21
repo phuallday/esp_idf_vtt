@@ -13,7 +13,7 @@
 #define CONFIG_LCD_I2C_MASTER_SDA 21
 #define CONFIG_LCD_I2C_MASTER_SCL 22
 
-ESP_EVENT_DEFINE_BASE(EVENT_LCD);
+ESP_EVENT_DEFINE_BASE(LCD_EVENT);
 static i2c_dev_t pcf8574;
 
 static esp_err_t write_lcd_data(const hd44780_t *lcd, uint8_t data) {
@@ -68,7 +68,7 @@ void lcd_init() {
     ESP_ERROR_CHECK(hd44780_init(&lcd));
     hd44780_clear(&lcd);
     hd44780_switch_backlight(&lcd, true);
-    esp_event_handler_register(EVENT_LCD, LCD_SHOW_MESSAGE, lcd_show_handler, NULL);
-    esp_event_handler_register(EVENT_LCD, LCD_SHOW_NEEDLE, lcd_show_handler, NULL);
-    esp_event_handler_register(EVENT_LCD, LCD_SHOW_QR, lcd_show_handler, NULL);
+    esp_event_handler_register(LCD_EVENT, LCD_SHOW_MESSAGE, lcd_show_handler, NULL);
+    esp_event_handler_register(LCD_EVENT, LCD_SHOW_NEEDLE, lcd_show_handler, NULL);
+    esp_event_handler_register(LCD_EVENT, LCD_SHOW_QR, lcd_show_handler, NULL);
 }

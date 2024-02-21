@@ -3,7 +3,7 @@
 
 #include "esp_event.h"
 
-ESP_EVENT_DECLARE_BASE(EVENT_LCD);
+ESP_EVENT_DECLARE_BASE(LCD_EVENT);
 
 enum{
     LCD_SHOW_MESSAGE,
