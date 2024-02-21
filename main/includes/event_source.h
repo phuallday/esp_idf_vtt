@@ -11,4 +11,9 @@ enum{
     LCD_SHOW_NEEDLE,
 };
 
+ESP_EVENT_DECLARE_BASE(QR_SCANNER_EVENT);
+
+enum{
+    
+};
 #endif 
