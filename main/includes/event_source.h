@@ -14,6 +14,6 @@ enum{
 ESP_EVENT_DECLARE_BASE(QR_SCANNER_EVENT);
 
 enum{
-    
+    QR_SANNER_DATA,
 };
 #endif 
