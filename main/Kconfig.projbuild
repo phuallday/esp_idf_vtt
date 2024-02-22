@@ -65,3 +65,26 @@ menu "Connection Configuration"
     endchoice
 
 endmenu
+menu "MQTT Configuration"
+
+    config BROKER_URL
+        string "Broker URL"
+        default "mqtt://mqtt.eclipseprojects.io"
+        help
+            URL of the broker to connect to
+
+    config BROKER_URL_FROM_STDIN
+        bool
+        default y if BROKER_URL = "FROM_STDIN"
+
+    choice ESP_WIFI_SAE_MODE
+        prompt "VTT MQTT working mode."
+        default ESP_WPA3_SAE_PWE_BOTH
+        help
+            Select uat mode for Test Enviroment,Select production mode for Test Enviroment .
+        config VTT_MQTT_UAT
+            bool "uat"
+        config ESP_WPA3_SAE_PWE_HASH_TO_ELEMENT
+            bool "production"
+    endchoice
+endmenu

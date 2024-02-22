@@ -360,6 +360,12 @@ CONFIG_ESP_WIFI_AUTH_WPA2_PSK=y
 # end of Connection Configuration
 
 #
+# MQTT Configuration
+#
+CONFIG_BROKER_URL="mqtt://mqtt.eclipseprojects.io"
+# end of MQTT Configuration
+
+#
 # Compiler options
 #
 CONFIG_COMPILER_OPTIMIZATION_DEFAULT=y
