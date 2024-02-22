@@ -40,7 +40,13 @@ void lcd_show_handler(void *event_handler_arg,
     switch (event_id) {
     case LCD_SHOW_QR:
         hd44780_gotoxy(&lcd, 0, 0);
-        hd44780_puts(&lcd, (const char *)event_data);
+        char *data = malloc(20);
+        strncpy(data, (const char *)event_data, 20);
+        char buff[20];
+        sprintf(buff, "%-19s", data);
+        hd44780_puts(&lcd, buff);
+        free(data);
+        data = NULL;
         break;
     case LCD_SHOW_MESSAGE:
         char *substr1 = malloc(20);
@@ -52,7 +58,9 @@ void lcd_show_handler(void *event_handler_arg,
         hd44780_gotoxy(&lcd, 0, 2);
         hd44780_puts(&lcd, substr2);
         free(substr1);
+        substr1 = NULL;
         free(substr2);
+        substr2 = NULL;
         break;
     case LCD_SHOW_NEEDLE:
         hd44780_gotoxy(&lcd, 0, 3);
