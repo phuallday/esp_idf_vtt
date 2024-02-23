@@ -342,7 +342,7 @@ CONFIG_PARTITION_TABLE_MD5=y
 #
 # Connection Configuration
 #
-CONFIG_ESP_WIFI_SSID="MatsuyaIOT1"
+CONFIG_ESP_WIFI_SSID="MatsuyaIOT"
 CONFIG_ESP_WIFI_PASSWORD="MatsuyaMIC@"
 # CONFIG_ESP_WPA3_SAE_PWE_HUNT_AND_PECK is not set
 # CONFIG_ESP_WPA3_SAE_PWE_HASH_TO_ELEMENT is not set
@@ -358,6 +358,14 @@ CONFIG_ESP_WIFI_AUTH_WPA2_PSK=y
 # CONFIG_ESP_WIFI_AUTH_WPA2_WPA3_PSK is not set
 # CONFIG_ESP_WIFI_AUTH_WAPI_PSK is not set
 # end of Connection Configuration
+
+#
+# MQTT Configuration
+#
+CONFIG_BROKER_URL="mqtt://mqtt.eclipseprojects.io"
+CONFIG_VTT_MQTT_UAT=y
+# CONFIG_VTT_MQTT_PRODUCTION is not set
+# end of MQTT Configuration
 
 #
 # Compiler options
