@@ -77,14 +77,14 @@ menu "MQTT Configuration"
         bool
         default y if BROKER_URL = "FROM_STDIN"
 
-    choice ESP_WIFI_SAE_MODE
+    choice VTT_MQTT_MODE
         prompt "VTT MQTT working mode."
-        default ESP_WPA3_SAE_PWE_BOTH
+        default VTT_MQTT_UAT
         help
             Select uat mode for Test Enviroment,Select production mode for Test Enviroment .
         config VTT_MQTT_UAT
             bool "uat"
-        config ESP_WPA3_SAE_PWE_HASH_TO_ELEMENT
+        config VTT_MQTT_PRODUCTION
             bool "production"
     endchoice
 endmenu
