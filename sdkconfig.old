@@ -362,7 +362,7 @@ CONFIG_ESP_WIFI_AUTH_WPA2_PSK=y
 #
 # MQTT Configuration
 #
-CONFIG_BROKER_URL="mqtt://mqtt.eclipseprojects.io"
+CONFIG_BROKER_URL="mqtt://vtt.mrd-mic.com"
 CONFIG_VTT_MQTT_UAT=y
 # CONFIG_VTT_MQTT_PRODUCTION is not set
 # end of MQTT Configuration

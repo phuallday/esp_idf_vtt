@@ -72,19 +72,9 @@ menu "MQTT Configuration"
         default "mqtt://mqtt.eclipseprojects.io"
         help
             URL of the broker to connect to
-
-    config BROKER_URL_FROM_STDIN
-        bool
-        default y if BROKER_URL = "FROM_STDIN"
-
-    choice VTT_MQTT_MODE
-        prompt "VTT MQTT working mode."
-        default VTT_MQTT_UAT
+    config VTT_MQTT_MODE
+        string "Working mode"
+        default "uat"
         help
             Select uat mode for Test Enviroment,Select production mode for Test Enviroment .
-        config VTT_MQTT_UAT
-            bool "uat"
-        config VTT_MQTT_PRODUCTION
-            bool "production"
-    endchoice
 endmenu
