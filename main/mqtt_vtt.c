@@ -25,16 +25,23 @@
 #include "lwip/sockets.h"
 #include "lwip/dns.h"
 #include "lwip/netdb.h"
+#include "esp_mac.h"
 
 #include "esp_log.h"
 #include "mqtt_client.h"
 #include "mqtt_vtt.h"
 
-static const char *TAG = "MQTT_EXAMPLE";
+static const char *TAG = "MQTT";
 
-static const char *SERVER = "uat";
-static char PUB_LINK[];
-static char MAC_PUB_LINK[];
+static char *SERVER = "uat";
+static char MAC_STR[18];
+static char PUB_LINK[30];     // uat/Production_Process/1
+static char MAC_PUB_LINK[30]; // uat/Production_Change/1
+static char MAC_SUB_LINK[30]; // uat/00:11:22:33:44:55/2
+static char DEVICE_CODE_IN[30];
+static char DEVICE_CODE_OUT[30];
+static char IN_SUB_LINK[50];
+static char OUT_SUB_LINK[50];
 
 static void log_error_if_nonzero(const char *message, int error_code) {
     if (error_code != 0) {
@@ -60,18 +67,14 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     switch ((esp_mqtt_event_id_t)event_id) {
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
-        #if CONFIG_VTT_MQTT_UAT
-        
-        #else if CONFIG_VTT_MQTT_PRODUCTION
+        msg_id = esp_mqtt_client_subscribe(client, MAC_SUB_LINK, 1);
+        // msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "data_3", 0, 1, 0);
+        // ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
 
-        #endif
-            // msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "data_3", 0, 1, 0);
-            // ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
+        // msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
+        // ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
-            // msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
-            // ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
-
-            msg_id = esp_mqtt_client_subscribe(client, "uat/#", 1);
+        msg_id = esp_mqtt_client_subscribe(client, "uat/#", 1);
         ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
 
         // msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos1");
@@ -147,4 +150,11 @@ void mqtt_vtt_init(void) {
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(client);
+
+    sprintf(PUB_LINK, "%s/Production_Process/1", SERVER);
+    sprintf(MAC_PUB_LINK, "%s/Production_Change/1", SERVER);
+    uint8_t *MAC_ADDR = calloc(6, sizeof(uint8_t));
+    esp_read_mac(MAC_ADDR, ESP_MAC_BASE);
+    sprintf(MAC_STR, "%02x:%02x:%02x:%02x:%02x:%02x", MAC_ADDR[0], MAC_ADDR[1], MAC_ADDR[2], MAC_ADDR[3], MAC_ADDR[4], MAC_ADDR[5]);
+    sprintf(MAC_SUB_LINK, "%s/%s/2", SERVER, MAC_STR);
 }
