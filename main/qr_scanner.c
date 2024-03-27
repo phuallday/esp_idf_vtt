@@ -47,7 +47,8 @@ static void uart_event_task(void *pvParameters) {
                 ESP_LOGI(TAG, "[DATA EVT]:");
                 uart_write_bytes(UART_NUM, (const char *)dtmp, event.size);
                 char *tok = strtok((const char *)dtmp, " \t\n\r");
-                esp_event_post(LCD_EVENT, LCD_SHOW_QR, tok, event.size +1 , portMAX_DELAY);
+                esp_event_post(LCD_EVENT, LCD_SHOW_QR, tok, event.size +1 , portMAX_DELAY); //show lcd
+                esp_event_post(QR_SCANNER_EVENT, QR_RECEIVED, tok, event.size +1 , portMAX_DELAY); //
                 break;
             // Event of HW FIFO overflow detected
             case UART_FIFO_OVF:

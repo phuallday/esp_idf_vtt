@@ -30,6 +30,7 @@
 #include "esp_log.h"
 #include "mqtt_client.h"
 #include "mqtt_vtt.h"
+#include "event_source.h"
 
 static const char *TAG = "MQTT";
 
@@ -38,10 +39,11 @@ static char MAC_STR[18];
 static char PUB_LINK[30];     // uat/Production_Process/1
 static char MAC_PUB_LINK[30]; // uat/Production_Change/1
 static char MAC_SUB_LINK[30]; // uat/00:11:22:33:44:55/2
-static char DEVICE_CODE_IN[30];
-static char DEVICE_CODE_OUT[30];
+static char DEVICE_CODE_IN[35];
+static char DEVICE_CODE_OUT[35];
 static char IN_SUB_LINK[50];
 static char OUT_SUB_LINK[50];
+static char CURRENT_MODEL[13];
 
 static void log_error_if_nonzero(const char *message, int error_code) {
     if (error_code != 0) {
@@ -68,17 +70,15 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
     case MQTT_EVENT_CONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_CONNECTED");
         msg_id = esp_mqtt_client_subscribe(client, MAC_SUB_LINK, 1);
-        // msg_id = esp_mqtt_client_publish(client, "/topic/qos1", "data_3", 0, 1, 0);
-        // ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
-
-        // msg_id = esp_mqtt_client_subscribe(client, "/topic/qos0", 0);
-        // ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
-
-        msg_id = esp_mqtt_client_subscribe(client, "uat/#", 1);
-        ESP_LOGI(TAG, "sent subscribe successful, msg_id=%d", msg_id);
-
-        // msg_id = esp_mqtt_client_unsubscribe(client, "/topic/qos1");
-        // ESP_LOGI(TAG, "sent unsubscribe successful, msg_id=%d", msg_id);
+        ESP_LOGI(TAG, "sent subscribe MAC_SUB_LINK successful, msg_id=%d", msg_id);
+        if (strlen(DEVICE_CODE_IN) != 0) {
+            msg_id = esp_mqtt_client_subscribe(client, IN_SUB_LINK, 1);
+            ESP_LOGI(TAG, "sent subscribe IN_SUB_LINK successful, msg_id=%d", msg_id);
+        }
+        if (strlen(DEVICE_CODE_OUT) != 0) {
+            msg_id = esp_mqtt_client_subscribe(client, OUT_SUB_LINK, 1);
+            ESP_LOGI(TAG, "sent subscribe OUT_SUB_LINK successful, msg_id=%d", msg_id);
+        }
         break;
     case MQTT_EVENT_DISCONNECTED:
         ESP_LOGI(TAG, "MQTT_EVENT_DISCONNECTED");
@@ -86,8 +86,6 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
     case MQTT_EVENT_SUBSCRIBED:
         ESP_LOGI(TAG, "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
-        msg_id = esp_mqtt_client_publish(client, "/topic/qos0", "data", 0, 0, 0);
-        ESP_LOGI(TAG, "sent publish successful, msg_id=%d", msg_id);
         break;
     case MQTT_EVENT_UNSUBSCRIBED:
         ESP_LOGI(TAG, "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
@@ -111,6 +109,17 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         break;
     default:
         ESP_LOGI(TAG, "Other event id:%d", event->event_id);
+        break;
+    }
+}
+
+void qr_scanner_data_handler(void *event_handler_arg,
+                             esp_event_base_t event_base,
+                             int32_t event_id,
+                             void *event_data) {
+    switch (event_id) {
+    case QR_RECEIVED:
+        printf("QR_RECEIVED:%s\n", (const char *)event_data);
         break;
     }
 }
@@ -151,10 +160,73 @@ void mqtt_vtt_init(void) {
     esp_mqtt_client_register_event(client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
     esp_mqtt_client_start(client);
 
+    esp_event_handler_register(QR_SCANNER_EVENT, QR_RECEIVED, qr_scanner_data_handler, NULL);
+
     sprintf(PUB_LINK, "%s/Production_Process/1", SERVER);
     sprintf(MAC_PUB_LINK, "%s/Production_Change/1", SERVER);
     uint8_t *MAC_ADDR = calloc(6, sizeof(uint8_t));
     esp_read_mac(MAC_ADDR, ESP_MAC_BASE);
     sprintf(MAC_STR, "%02x:%02x:%02x:%02x:%02x:%02x", MAC_ADDR[0], MAC_ADDR[1], MAC_ADDR[2], MAC_ADDR[3], MAC_ADDR[4], MAC_ADDR[5]);
     sprintf(MAC_SUB_LINK, "%s/%s/2", SERVER, MAC_STR);
+    free(MAC_ADDR);
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        // NVS partition was truncated and needs to be erased
+        // Retry nvs_flash_init
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(err);
+    nvs_handle_t nvs_handle;
+    err = nvs_open("stogare", NVS_READONLY, &nvs_handle);
+    if (err != ESP_OK) {
+        printf("Error (%s) opening NVS handle!\n", esp_err_to_name(err));
+    }
+    else {
+        printf("Reading DEVICE_CODE_IN from NVS ... ");
+        err = nvs_get_str(nvs_handle, "DEVI_CODE_IN", DEVICE_CODE_IN, sizeof(DEVICE_CODE_IN));
+        switch (err) {
+        case ESP_OK:
+            printf("DEVICE_CODE_IN = %s\n", DEVICE_CODE_IN);
+            break;
+        case ESP_ERR_NVS_NOT_FOUND:
+            printf("The value is not initialized yet!\n");
+            break;
+        default:
+            printf("Error (%s) reading!\n", esp_err_to_name(err));
+        }
+        printf("Reading DEVICE_CODE_OUT from NVS ... ");
+        err = nvs_get_str(nvs_handle, "DEVI_CODE_OUT", DEVICE_CODE_OUT, sizeof(DEVICE_CODE_OUT));
+        switch (err) {
+        case ESP_OK:
+            printf("DEVICE_CODE_OUT = %s\n", DEVICE_CODE_OUT);
+            break;
+        case ESP_ERR_NVS_NOT_FOUND:
+            printf("The value is not initialized yet!\n");
+            break;
+        default:
+            printf("Error (%s) reading!\n", esp_err_to_name(err));
+        }
+        printf("Reading CURRENT_MODEL from NVS ... ");
+        err = nvs_get_str(nvs_handle, "CURRENT_MODEL", CURRENT_MODEL, sizeof(CURRENT_MODEL));
+        switch (err) {
+        case ESP_OK:
+            printf("CURRENT_MODEL = %s\n", CURRENT_MODEL);
+            break;
+        case ESP_ERR_NVS_NOT_FOUND:
+            printf("The value is not initialized yet!\n");
+            break;
+        default:
+            printf("Error (%s) reading!\n", esp_err_to_name(err));
+        }
+        nvs_close(nvs_handle);
+    }
+    if (strlen(DEVICE_CODE_IN) != 0) {
+        sprintf(IN_SUB_LINK, "%s/%s/2", SERVER, DEVICE_CODE_IN);
+        printf("IN_SUB_LINK:%s", IN_SUB_LINK);
+    }
+    if (strlen(DEVICE_CODE_OUT) != 0) {
+        sprintf(OUT_SUB_LINK, "%s/%s/2", SERVER, DEVICE_CODE_OUT);
+        printf("OUT_SUB_LINK:%s", OUT_SUB_LINK);
+    }
 }
