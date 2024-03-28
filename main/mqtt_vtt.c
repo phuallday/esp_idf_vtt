@@ -104,7 +104,6 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         sprintf(data, "%.*s", event->data_len, event->data);
         printf("%s\n", topic);
         printf("%s\n", data);
-        printf("%d\n", strcmp(topic, MAC_SUB_LINK));
         if (strcmp(topic, MAC_SUB_LINK) == 0) {
             printf("Change Product Type:\n");
             cJSON *jsonData = cJSON_Parse(data);
@@ -113,13 +112,14 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 if (error_ptr != NULL) {
                     printf("Error: %s\n", error_ptr);
                 }
-                cJSON_Delete(jsonData);
             }
             else {
-                cJSON *ErrCode = cJSON_GetObjectItemCaseSensitive(jsonData, "ErrCode");
+                cJSON *ErrCode   = cJSON_GetObjectItemCaseSensitive(jsonData, "ErrCode");
+                cJSON *ErrMsgStr = cJSON_GetObjectItemCaseSensitive(jsonData, "ErrMsg");
+                cJSON *ErrMsg    = cJSON_Parse(ErrMsgStr->valuestring);
                 if (cJSON_IsString(ErrCode) && (ErrCode->valuestring != NULL)) {
                     printf("ErrCode: %s\n", ErrCode->valuestring);
-                    if (strcmp(ErrCode->valuestring, "31")) {
+                    if (strcmp(ErrCode->valuestring, "31") == 0) {
                         if (strlen(DEVICE_CODE_IN) > 0) {
                             int msg_id = esp_mqtt_client_unsubscribe(client, IN_SUB_LINK);
                             ESP_LOGI(TAG, "sent unsubscribe IN_SUB_LINK successful, msg_id=%d", msg_id);
@@ -130,54 +130,49 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                         }
                         memset(DEVICE_CODE_IN, 0, sizeof DEVICE_CODE_IN);
                         memset(DEVICE_CODE_OUT, 0, sizeof DEVICE_CODE_OUT);
-                        cJSON *ErrMsg = cJSON_GetObjectItemCaseSensitive(jsonData, "ErrMsg");
-                        if (cJSON_IsArray(ErrMsg)) {
-                            cJSON *Device = NULL;
-                            cJSON_ArrayForEach(Device, ErrMsg) {
-                                cJSON *STEP_TYPE = cJSON_GetObjectItemCaseSensitive(Device, "STEP_TYPE");
-                                if (cJSON_IsString(STEP_TYPE) && (STEP_TYPE->valuestring != NULL)) {
-                                    cJSON *DEVICE_CODE = cJSON_GetObjectItemCaseSensitive(Device, "DEVICE_CODE");
-                                    if (cJSON_IsString(DEVICE_CODE) && (DEVICE_CODE->valuestring != NULL)) {
-                                        if (strcmp(STEP_TYPE->valuestring, "IN") == 0) {
-                                            sprintf(DEVICE_CODE_IN, "%s", DEVICE_CODE->valuestring);
-                                        }
-                                        else if (strcmp(STEP_TYPE->valuestring, "OUT") == 0) {
-                                            sprintf(DEVICE_CODE_OUT, "%s", DEVICE_CODE->valuestring);
-                                        }
+                        cJSON *Device = NULL;
+                        cJSON_ArrayForEach(Device, ErrMsg) {
+                            cJSON *STEP_TYPE   = cJSON_GetObjectItemCaseSensitive(Device, "STEP_TYPE");
+                            cJSON *DEVICE_CODE = cJSON_GetObjectItemCaseSensitive(Device, "DEVICE_CODE");
+                            if (cJSON_IsString(STEP_TYPE) && (STEP_TYPE->valuestring != NULL)) {
+                                if (cJSON_IsString(DEVICE_CODE) && (DEVICE_CODE->valuestring != NULL)) {
+                                    if (strcmp(STEP_TYPE->valuestring, "IN") == 0) {
+                                        sprintf(DEVICE_CODE_IN, "%s", DEVICE_CODE->valuestring);
+                                        printf("DEVICE_CODE_IN:%s\n", DEVICE_CODE_IN);
                                     }
-                                    cJSON_Delete(DEVICE_CODE);
+                                    else if (strcmp(STEP_TYPE->valuestring, "OUT") == 0) {
+                                        sprintf(DEVICE_CODE_OUT, "%s", DEVICE_CODE->valuestring);
+                                        printf("DEVICE_CODE_OUT:%s\n", DEVICE_CODE_OUT);
+                                    }
                                 }
-                                else {
-                                }
-                                cJSON_Delete(STEP_TYPE);
                             }
-                            cJSON_Delete(Device);
+                            else {
+                                printf("STEP_TYPE is not string type or null value.\n");
+                            }
                         }
-                        else {
-                        }
-                        cJSON_Delete(ErrMsg);
+
                         if (strlen(DEVICE_CODE_IN) > 0) {
                             sprintf(IN_SUB_LINK, "%s/%s/2", SERVER, DEVICE_CODE_IN);
                             int msg_id = esp_mqtt_client_subscribe(client, IN_SUB_LINK, 1);
                             ESP_LOGI(TAG, "sent subscribe IN_SUB_LINK successful, msg_id=%d", msg_id);
+                            printf("IN_SUB_LINK:%s\n", IN_SUB_LINK);
                         }
                         if (strlen(DEVICE_CODE_OUT) > 0) {
                             sprintf(OUT_SUB_LINK, "%s/%s/2", SERVER, DEVICE_CODE_OUT);
                             int msg_id = esp_mqtt_client_subscribe(client, OUT_SUB_LINK, 1);
                             ESP_LOGI(TAG, "sent subscribe OUT_SUB_LINK successful, msg_id=%d", msg_id);
+                            printf("IN_SUB_LINK:%s\n", OUT_SUB_LINK);
                         }
-                        cJSON_Delete(ErrMsg);
                     }
-                    else if (strcmp(ErrCode->valuestring, "32")) {
-                        cJSON *ErrMsg = cJSON_GetObjectItemCaseSensitive(jsonData, "ErrMsg");
+                    else if (strcmp(ErrCode->valuestring, "32") == 0) {
+                        printf("SHOW_LCD:%s\n", ErrMsg->valuestring);
                         esp_event_post(LCD_EVENT, LCD_SHOW_MESSAGE, ErrMsg->valuestring, strlen(ErrMsg->valuestring) + 1, portMAX_DELAY);
-                        cJSON_Delete(ErrMsg);
                     }
                 }
                 else {
                     printf("ErrCode: %s\n", "err");
                 }
-                cJSON_Delete(ErrCode);
+                cJSON_Delete(ErrMsg);
             }
             cJSON_Delete(jsonData);
         }
@@ -215,7 +210,7 @@ void qr_scanner_data_handler(void *event_handler_arg,
             cJSON_AddNumberToObject(changTypeJson, "ID", rand());
             cJSON_AddStringToObject(changTypeJson, "MAC_ADDRESS", MAC_STR);
             cJSON_AddStringToObject(changTypeJson, "QR_CODE", qrStr);
-            char *json_ChangeTypeStr = cJSON_Print(changTypeJson);
+            char *json_ChangeTypeStr = cJSON_PrintUnformatted(changTypeJson);
             printf("%s\n", json_ChangeTypeStr);
             int msg_id = esp_mqtt_client_publish(client, MAC_PUB_LINK, json_ChangeTypeStr, strlen(json_ChangeTypeStr), 1, false);
             ESP_LOGI(TAG, "sent publish MAC_PUB_LINK successful, msg_id=%d", msg_id);
@@ -234,32 +229,6 @@ void mqtt_vtt_init(void) {
     esp_mqtt_client_config_t mqtt_cfg = {
         .broker.address.uri = CONFIG_BROKER_URL,
     };
-#if CONFIG_BROKER_URL_FROM_STDIN
-    char line[128];
-
-    if (strcmp(mqtt_cfg.broker.address.uri, "FROM_STDIN") == 0) {
-        int count = 0;
-        printf("Please enter url of mqtt broker\n");
-        while (count < 128) {
-            int c = fgetc(stdin);
-            if (c == '\n') {
-                line[count] = '\0';
-                break;
-            }
-            else if (c > 0 && c < 127) {
-                line[count] = c;
-                ++count;
-            }
-            vTaskDelay(10 / portTICK_PERIOD_MS);
-        }
-        mqtt_cfg.broker.address.uri = line;
-        printf("Broker url: %s\n", line);
-    }
-    else {
-        ESP_LOGE(TAG, "Configuration mismatch: wrong broker url");
-        abort();
-    }
-#endif /* CONFIG_BROKER_URL_FROM_STDIN */
 
     client = esp_mqtt_client_init(&mqtt_cfg);
     /* The last argument may be used to pass data to the event handler, in this example mqtt_event_handler */
